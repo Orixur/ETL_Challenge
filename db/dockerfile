@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/mssql/server:2019-CU14-ubuntu-20.04
+
+ENV ACCEPT_EULA=Y
+ENV SA_PASSWORD=Pidata2021-
+ENV DEFAULT_MSSQL_SA_PASSWORD=Pidata2021-
+ENV MSSQL_PID=Developer
+
+COPY ./Testing_ETL.bak /var/opt/mssql/backup/Testing_ETL.bak
