@@ -11,6 +11,13 @@ DELIMITER = ','
 QUOTECHAR = '"'
 WORK_TABLE = 'Unificado'
 
+def next_weekday(d, weekday):
+    days_ahead = weekday - d.weekday()
+    if days_ahead <= 0:
+        days_ahead += 7
+    n = d + timedelta(days_ahead)
+    return n.replace(hour=5, minute=0, second=0, microsecond=0)
+
 def orchestrator_function(context: df.DurableOrchestrationContext):
     """
         This orchestrator workflow covers the ingest of an external csv blob via url.\n
@@ -55,14 +62,14 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         current_log = (f'Current blob_hash {blob_hash} was previously uploaded.')
 
     logging.info('Re-schedule orchestrator')
-    next_ingest = context.current_utc_datetime + timedelta(minutes = 1)
+    next_ingest = next_weekday(context.current_utc_datetime, 0) # 0 = Monday
     context.set_custom_status({
         'current_status_description': current_log,
         'next_ingest': str(next_ingest)
     })
-    # yield context.create_timer(next_cleanup)
+    yield context.create_timer(next_ingest)
 
-    # context.continue_as_new(None)
+    context.continue_as_new(None)
 
 
 main = df.Orchestrator.create(orchestrator_function)
